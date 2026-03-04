@@ -6,466 +6,282 @@
 <title>Relighted — Animator</title>
 <link rel="icon" href="/favicon.jpg">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
 <style>
-  :root{
-    --bg:#0A0C0F;
-    --panel:#111417;
-    --muted:#A0AEC0;
-    --accent:#9AA5B1;
-    --text:#F0F4FA;
-    --glass: rgba(17,20,23,0.45);
-    --radius:16px;
-    --ease: cubic-bezier(0.23,1,0.32,1);
-    --container:1200px;
-  }
+:root{
+  --bg:#0A0C0F;
+  --panel:#111417;
+  --muted:#A0AEC0;
+  --accent:#9AA5B1;
+  --text:#F0F4FA;
+  --glass: rgba(17,20,23,0.45);
+  --radius:16px;
+  --ease:cubic-bezier(.19,1,.22,1);
+  --container:1200px;
+}
 
-  /* Reset */
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%}
-  body{
-    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
-    background:var(--bg);
-    color:var(--text);
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    line-height:1.5;
-  }
+/* RESET */
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Inter,system-ui;
+  background:var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
+}
 
-  /* subtle entrance */
-  .fade-in {opacity:0; transform:translateY(8px); animation:fadeIn .9s var(--ease) forwards;}
-  @keyframes fadeIn {to {opacity:1; transform:none;}}
+/* BACKGROUND GLOW */
+.bg-layer{position:fixed;inset:0;z-index:-3;background:var(--bg)}
+.sphere{
+  position:fixed;
+  border-radius:50%;
+  filter:blur(90px);
+  pointer-events:none;
+}
+.sphere.one{
+  width:70vw;height:70vw;
+  right:-20vw;top:-25vw;
+  background:radial-gradient(circle,rgba(154,165,177,.18),transparent 60%);
+}
+.sphere.two{
+  width:60vw;height:60vw;
+  left:-20vw;bottom:-25vw;
+  background:radial-gradient(circle,rgba(60,70,90,.22),transparent 60%);
+}
 
-  /* Background shapes & particles (minimal) */
-  .bg-layer{position:fixed;inset:0;z-index:-3;background:var(--bg)}
-  .sphere{position:fixed;border-radius:50%;filter:blur(60px);pointer-events:none;opacity:.9}
-  .sphere.one{width:70vw;height:70vw;right:-18vw;top:-24vw;background:radial-gradient(circle, rgba(154,165,177,0.08), transparent 60%);z-index:-2;}
-  .sphere.two{width:60vw;height:60vw;left:-18vw;bottom:-24vw;background:radial-gradient(circle, rgba(45,55,72,0.12), transparent 60%);z-index:-2;}
+.wrap{max-width:var(--container);margin:auto;padding:3rem 1.5rem}
 
-  #particles-container{position:fixed;inset:0;z-index:-1;pointer-events:none}
+/* TOPBAR */
+.topbar{
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom:3rem;
+}
 
-  /* Layout container */
-  .wrap{max-width:var(--container);margin:0 auto;padding:3.2rem 1.5rem;position:relative;z-index:2}
+.nav-right{
+  display:flex;
+  gap:.8rem;
+}
 
-  /* Top nav (minimal) */
-  .topbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:2.6rem}
-  .nav-dots{display:flex;gap:1rem;align-items:center}
-  .dot{width:38px;height:6px;background:rgba(255,255,255,0.06);border-radius:6px}
-  .dot.small{width:60px;height:12px;border-radius:999px;background:var(--accent)}
+.top-icon{
+  width:42px;height:42px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:14px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.05);
+  backdrop-filter:blur(8px);
+  transition:.35s var(--ease);
+  text-decoration:none;
+  color:var(--text);
+}
 
-  /* default nav-right placeholder - will be overridden */
-  .nav-right{height:28px;width:84px;background:rgba(255,255,255,0.06);border-radius:999px;display:flex;align-items:center;gap:.6rem;padding:.2rem}
+.top-icon:hover{
+  transform:translateY(-6px) scale(1.08);
+}
 
-  /* HERO (two columns) */
-  .hero{display:grid;grid-template-columns:1fr 520px;gap:3rem;align-items:center;margin-bottom:4rem}
-  @media (max-width:980px){ .hero{grid-template-columns:1fr; } .hero-media{order:-1;margin-bottom:1.25rem;} }
+.youtube-icon{
+  color:#ff2d2d;
+}
 
-  .hero-left{max-width:640px}
-  h1{
-    font-size:clamp(2rem,5vw,3.8rem);
-    font-weight:300;
-    letter-spacing:-0.02em;
-    margin-bottom:.6rem;
-    background:linear-gradient(135deg,var(--text),var(--muted));
-    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  }
-  .subtitle{color:var(--muted);font-weight:300;margin-bottom:1.1rem;max-width:44ch}
+.youtube-icon:hover{
+  box-shadow:0 0 30px rgba(255,45,45,.4);
+}
 
-  .badge{display:inline-flex;gap:.9rem;padding:.5rem .9rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);border-radius:999px;color:var(--muted);font-size:.92rem;margin:1rem 0;align-items:center;backdrop-filter:blur(6px)}
-  .badge i{color:var(--accent);font-style:normal;margin-right:.2rem}
+.secret-icon{
+  font-weight:700;
+  color:var(--accent);
+}
 
-  .cta-row{display:flex;gap:1rem;align-items:center;margin-top:1.2rem;flex-wrap:wrap}
-  .btn{
-    display:inline-flex;align-items:center;gap:.6rem;padding:.6rem 1rem;border-radius:12px;text-decoration:none;font-weight:600;
-    transition:transform .22s var(--ease), box-shadow .22s var(--ease), background .22s var(--ease);
-    position:relative;overflow:hidden;
-  }
-  .btn.primary{background:var(--accent);color:var(--bg)}
-  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text)}
-  .btn:hover{transform:translateY(-4px)}
-  .btn::after{ content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(120deg,transparent,rgba(255,255,255,0.12),transparent); transition:all .6s; }
-  .btn:hover::after{ left:100%; }
+/* HERO */
+.hero{
+  display:grid;
+  grid-template-columns:1fr 520px;
+  gap:3rem;
+  align-items:center;
+}
 
-  /* HERO media (big rectangle) */
-  .hero-media{
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border-radius:18px;padding:1rem;border:1px solid rgba(255,255,255,0.04);
-    display:flex;align-items:center;justify-content:center;min-height:280px;box-shadow:0 20px 40px -20px rgba(0,0,0,0.6);
-  }
-  .hero-media .placeholder{width:100%;height:100%;border-radius:12px;background:#333;display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:600}
+@media(max-width:980px){
+  .hero{grid-template-columns:1fr}
+}
 
-  /* PROFILE IMAGE HERO (replaces video on right) */
-  .profile-wrap{
-    position:relative;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    perspective:1000px;
-    background:linear-gradient(145deg,#0e1116,#0c0f13);
-    border-radius:22px;
-    overflow:hidden;
-    border:1px solid rgba(255,255,255,0.05);
-    box-shadow:
-      inset 0 0 40px rgba(255,255,255,0.02),
-      0 30px 60px -20px rgba(0,0,0,0.8);
-    transition:all .6s var(--ease);
-    min-height:320px;
-    width:100%;
-  }
+h1{
+  font-size:clamp(2rem,5vw,3.8rem);
+  font-weight:300;
+  background:linear-gradient(135deg,var(--text),var(--muted));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
 
-  .profile-wrap:hover{
-    transform:translateY(-6px) scale(1.02);
-    box-shadow:
-      inset 0 0 60px rgba(255,255,255,0.03),
-      0 40px 80px -20px rgba(0,0,0,0.9);
-  }
+.subtitle{
+  color:var(--muted);
+  margin:1rem 0 1.4rem;
+  max-width:45ch;
+}
 
-  .profile-img{
-    width:100%;
-    max-width:420px;
-    border-radius:18px;
-    transition:transform .8s var(--ease), filter .8s var(--ease);
-    filter:brightness(.92) contrast(1.05);
-    transform-origin:center center;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 -10px 40px rgba(0,0,0,0.45);
-    background:linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.05));
-  }
+/* PROFILE */
+.profile-wrap{
+  position:relative;
+  border-radius:22px;
+  overflow:hidden;
+  background:#0e1116;
+  border:1px solid rgba(255,255,255,.06);
+  box-shadow:0 40px 80px -30px rgba(0,0,0,.8);
+  transition:.6s var(--ease);
+  transform-style:preserve-3d;
+}
 
-  .profile-wrap:hover .profile-img{
-    transform:scale(1.05) rotateX(2deg) rotateY(-2deg);
-    filter:brightness(1) contrast(1.07);
-  }
+.profile-img{
+  width:100%;
+  transition:.8s var(--ease);
+}
 
-  .profile-glow{
-    position:absolute;
-    inset:-40%;
-    background:radial-gradient(circle, rgba(154,165,177,0.15), transparent 60%);
-    animation:rotateGlow 18s linear infinite;
-    pointer-events:none;
-    mix-blend-mode:screen;
-  }
+.profile-glow{
+  position:absolute;
+  inset:-60%;
+  background:radial-gradient(circle,
+    rgba(154,165,177,.35),
+    rgba(154,165,177,.15),
+    transparent 60%);
+  animation:spin 12s linear infinite;
+  mix-blend-mode:screen;
+  pointer-events:none;
+}
 
-  @keyframes rotateGlow{
-    from{transform:rotate(0deg)}
-    to{transform:rotate(360deg)}
-  }
+@keyframes spin{
+  from{transform:rotate(0)}
+  to{transform:rotate(360deg)}
+}
 
-  /* TOP RIGHT ICONS (YouTube + Secret) */
-  .nav-right{
-    display:flex;
-    align-items:center;
-    gap:0.6rem;
-    background:none;
-    width:auto;
-    height:auto;
-    padding:0;
-  }
+/* CARDS */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1.4rem;
+  margin-top:4rem;
+}
 
-  .top-icon{
-    width:40px;
-    height:40px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:12px;
-    background:rgba(255,255,255,0.02);
-    border:1px solid rgba(255,255,255,0.04);
-    backdrop-filter:blur(6px);
-    transition:all .28s var(--ease);
-    cursor:pointer;
-    text-decoration:none;
-    color:var(--text);
-  }
+@media(max-width:980px){
+  .cards{grid-template-columns:1fr}
+}
 
-  .top-icon:hover{
-    transform:translateY(-4px) scale(1.08);
-    background:rgba(154,165,177,0.10);
-    box-shadow:0 14px 30px rgba(0,0,0,0.6);
-  }
+.card{
+  background:var(--panel);
+  border-radius:16px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.05);
+  transition:.5s var(--ease);
+  position:relative;
+}
 
-  .youtube-icon svg{
-    width:18px;
-    height:18px;
-    display:block;
-    fill:none;
-    stroke:var(--accent);
-    stroke-width:0;
-    filter:drop-shadow(0 6px 16px rgba(154,165,177,0.06));
-  }
+.card::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,.1),transparent);
+  transform:translateX(-100%);
+}
 
-  .secret-icon{
-    font-weight:700;
-    color:var(--accent);
-    font-size:16px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
+.card:hover::after{
+  animation:shine 1.4s;
+}
 
-  /* Featured Title + small subtitle centered (under hero) */
-  .section-title{ text-align:center;margin:3rem 0 1.6rem}
-  .section-title h2{font-weight:300;font-size:1.6rem;background:linear-gradient(135deg,var(--accent),var(--muted));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-  .section-title p{color:var(--muted);font-weight:300;margin-top:.4rem}
+@keyframes shine{
+  100%{transform:translateX(100%)}
+}
 
-  /* Cards row (3) */
-  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
-  @media (max-width:980px){ .cards{grid-template-columns:repeat(2,1fr)} }
-  @media (max-width:640px){ .cards{grid-template-columns:1fr} }
+.card:hover{
+  transform:translateY(-12px);
+  box-shadow:0 40px 80px -30px rgba(0,0,0,.9);
+}
 
-  .card{
-    background:var(--panel);border-radius:14px;padding:0;overflow:hidden;border:1px solid rgba(255,255,255,0.03);
-    transition:transform .45s var(--ease), box-shadow .45s var(--ease);
-    transform-style:preserve-3d;
-  }
-  .card::before{
-    content:'';
-    position:absolute;
-    inset:0;
-    border-radius:14px;
-    background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent 30%);
-    pointer-events:none;
-    mix-blend-mode:overlay;
-    opacity:0;
-    transition:opacity .4s;
-  }
-  .card:hover::before{opacity:1}
-  .card:hover{transform:translateY(-10px) rotateX(3deg);box-shadow:0 40px 70px -30px rgba(0,0,0,0.75)}
-  .card .thumb{position:relative;padding-bottom:56.25%;background:#000}
-  .card iframe{position:absolute;inset:0;width:100%;height:100%;border:0;opacity:.95;transition:transform .6s var(--ease)}
-  .card:hover iframe{transform:scale(1.06);opacity:1}
-  .card .meta{padding:1rem 1.2rem}
-  .card .meta h3{font-size:1rem;font-weight:600;letter-spacing:-0.01em;margin-bottom:.25rem}
-  .card .meta p{color:var(--muted);font-size:.9rem;font-weight:300}
+.thumb{position:relative;padding-bottom:56%;background:#000}
+.thumb iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 
-  /* Prices & stats simplified (below) */
-  .two-cols{display:grid;grid-template-columns:1fr 340px;gap:2rem;margin-top:3.6rem}
-  @media (max-width:980px){ .two-cols{grid-template-columns:1fr} }
+/* SECTION */
+.section-title{
+  text-align:center;
+  margin-top:4rem;
+}
 
-  .prices{
-    background:var(--glass);padding:1.4rem;border-radius:14px;border:1px solid rgba(255,255,255,0.03)
-  }
-  .prices h3{font-weight:400;color:var(--accent);margin-bottom:.6rem}
-  .price-row{display:flex;justify-content:space-between;padding:.8rem 0;border-top:1px solid rgba(255,255,255,0.03)}
-  .price-row:first-of-type{border-top:0;padding-top:0}
-  .price-desc{color:var(--text);font-weight:400}
-  .price-val{color:var(--accent);font-weight:600}
-
-  .stats{display:flex;flex-direction:column;gap:.8rem}
-  .stat{background:rgba(255,255,255,0.02);padding:1rem;border-radius:12px;text-align:center;transition:transform .35s var(--ease), box-shadow .35s var(--ease)}
-  .stat:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(0,0,0,0.6)}
-  .stat .icon{font-size:1.4rem}
-  .stat .label{color:var(--muted);font-size:.85rem;margin-top:.25rem}
-
-  /* small helpers */
-  .muted{color:var(--muted)}
-  a{color:inherit}
-  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.section-title h2{
+  font-weight:300;
+  background:linear-gradient(135deg,var(--accent),var(--muted));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
 </style>
 </head>
+
 <body>
 
-  <!-- Background layers -->
-  <div class="bg-layer"></div>
-  <div class="sphere one"></div>
-  <div class="sphere two"></div>
-  <div id="particles-container"></div>
+<div class="bg-layer"></div>
+<div class="sphere one"></div>
+<div class="sphere two"></div>
 
-  <div class="wrap fade-in">
-    <!-- top small nav -->
-    <div class="topbar">
-      <div class="nav-dots">
-        <div class="dot"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
-      </div>
+<div class="wrap">
 
-      <!-- TOP RIGHT ICONS (YouTube + Secret) -->
-      <div class="nav-right" aria-hidden="false">
-        <a href="https://www.youtube.com/@xRelighted" target="_blank" class="top-icon youtube-icon" aria-label="YouTube - Relighted" rel="noopener">
-          <!-- YouTube-like glyph styled to page colors -->
-          <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
-            <path d="M23 7s-.2-1.5-.8-2.2c-.8-.9-1.6-.9-2-1C17.6 3.5 12 3.5 12 3.5h0s-5.6 0-8.2.3c-.4.1-1.2.1-2 1C1.2 5.5 1 7 1 7S.8 8.8.8 10.6v1.7C.8 14 1 15.8 1 15.8s.2 1.5.8 2.2c.8.9 1.8.8 2.2.9 1.6.1 8 .3 8 .3s5.6 0 8.2-.3c.4-.1 1.2-.1 2-1 .6-.7.8-2.2.8-2.2s.2-1.8.2-3.5v-1.7C23.2 8.8 23 7 23 7zM9.8 14.5v-5l4.8 2.5-4.8 2.5z"/>
-          </svg>
-        </a>
+<div class="topbar">
+  <div class="nav-right">
+    <a href="https://www.youtube.com/@xRelighted" target="_blank" class="top-icon youtube-icon">
+      ▶
+    </a>
+    <a href="/secret" class="top-icon secret-icon">?</a>
+  </div>
+</div>
 
-        <a href="/secret" class="top-icon secret-icon" aria-label="Secret">
-          ?
-        </a>
-      </div>
-    </div>
-
-    <!-- HERO -->
-    <section class="hero" aria-label="Hero">
-      <div class="hero-left">
-        <h1>Relighted</h1>
-        <div class="subtitle">Relighted, a young animator at Roblox Studio, using blender to deliver quality and efficiency to my clients. Enter the discord server to contact me.</div>
-
-        <div class="badge" aria-hidden="false">
-          <i>●</i> Roblox Studio &nbsp; • &nbsp; Blender &nbsp; • &nbsp; 1+ Year Experience
-        </div>
-
-        <div class="cta-row">
-          <a class="btn primary" href="https://discord.gg/x33ykcPqSY" target="_blank" rel="noopener">Discord →</a>
-          <a class="btn ghost" href="/animations">Animations</a>
-        </div>
-      </div>
-
-      <!-- RIGHT: PROFILE IMAGE (replaces video) -->
-      <div class="hero-media" role="region" aria-label="Profile">
-        <div class="profile-wrap">
-          <div class="profile-glow" aria-hidden="true"></div>
-          <img class="profile-img" src="https://i.imgur.com/pvvtE36.png" alt="Relighted profile image">
-        </div>
-      </div>
-    </section>
-
-    <!-- featured work -->
-    <div class="section-title">
-      <h2>Featured Work</h2>
-      <p>Selected animations & cinematic moments</p>
-    </div>
-
-    <!-- cards row (3 videos) -->
-    <div class="cards">
-      <article class="card fade-in" tabindex="0">
-        <div class="thumb">
-          <iframe src="https://www.youtube.com/embed/kR0Cv6524mM?modestbranding=1&rel=0&showinfo=0" title="Nagi Goal" loading="lazy" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"></iframe>
-        </div>
-        <div class="meta">
-          <h3>Nagi Goal vs U20</h3>
-          <p class="muted">Instantly kill it..</p>
-        </div>
-      </article>
-
-      <article class="card fade-in" style="animation-delay:.08s" tabindex="0">
-        <div class="thumb">
-          <iframe src="https://www.youtube.com/embed/TB9BlAUvUa8?modestbranding=1&rel=0&showinfo=0" title="Two Gun Volley" loading="lazy" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"></iframe>
-        </div>
-        <div class="meta">
-          <h3>Two Gun Volley</h3>
-          <p class="muted">A new invention here and now...</p>
-        </div>
-      </article>
-
-      <article class="card fade-in" style="animation-delay:.16s" tabindex="0">
-        <div class="thumb">
-          <iframe src="https://www.youtube.com/embed/3zpqruFkSgU?modestbranding=1&rel=0&showinfo=0" title="Half-Baked" loading="lazy" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"></iframe>
-        </div>
-        <div class="meta">
-          <h3>Half-Baked</h3>
-          <p class="muted">Huh?! Itoshi Sae?..</p>
-        </div>
-      </article>
-    </div>
-
-    <!-- prices + stats -->
-    <div class="two-cols">
-      <section class="prices fade-in" aria-labelledby="pricesTitle">
-        <h3 id="pricesTitle">Prices</h3>
-
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-top:1rem">
-          <div style="background:rgba(255,255,255,0.02);padding:.8rem;border-radius:10px">
-            <div style="font-weight:600;color:var(--accent);margin-bottom:.6rem">Rig Animation</div>
-            <div class="price-row"><div class="price-desc">1 Rig R6</div><div class="price-val">500<span class="muted" style="font-size:.8rem;margin-left:.4rem">R$</span></div></div>
-            <div class="price-row"><div class="price-desc">2 Rigs R6</div><div class="price-val">625<span class="muted" style="font-size:.8rem;margin-left:.4rem">R$</span></div></div>
-          </div>
-
-          <div style="background:rgba(255,255,255,0.02);padding:.8rem;border-radius:10px">
-            <div style="font-weight:600;color:var(--accent);margin-bottom:.6rem">Cutscene</div>
-            <div class="price-row"><div class="price-desc">1 Rig R6</div><div class="price-val">1000<span class="muted" style="font-size:.8rem;margin-left:.4rem">R$</span></div></div>
-            <div class="price-row"><div class="price-desc">2 Rigs R6</div><div class="price-val">1250<span class="muted" style="font-size:.8rem;margin-left:.4rem">R$</span></div></div>
-          </div>
-        </div>
-
-        <div style="margin-top:1rem;color:var(--muted);font-size:.92rem;border-top:1px solid rgba(255,255,255,0.03);padding-top:.8rem">
-          Read the ToS of the Discord Server.
-        </div>
-      </section>
-
-      <aside class="stats fade-in" aria-label="Stats">
-        <div class="stat"><div class="icon">⭐</div><div class="label">Efficiency</div></div>
-        <div class="stat"><div class="icon">🔝</div><div class="label">Quality</div></div>
-        <div class="stat"><div class="icon">💨</div><div class="label">Fast</div></div>
-      </aside>
+<section class="hero">
+  <div>
+    <h1>Relighted</h1>
+    <div class="subtitle">
+      Young Roblox Studio animator using Blender to deliver cinematic quality and efficiency.
     </div>
   </div>
 
+  <div class="profile-wrap" id="profile3d">
+    <div class="profile-glow"></div>
+    <img class="profile-img" src="https://i.imgur.com/pvvtE36.png">
+  </div>
+</section>
+
+<div class="section-title">
+  <h2>Featured Work</h2>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <div class="thumb">
+      <iframe src="https://www.youtube.com/embed/kR0Cv6524mM"></iframe>
+    </div>
+  </div>
+  <div class="card">
+    <div class="thumb">
+      <iframe src="https://www.youtube.com/embed/TB9BlAUvUa8"></iframe>
+    </div>
+  </div>
+  <div class="card">
+    <div class="thumb">
+      <iframe src="https://www.youtube.com/embed/3zpqruFkSgU"></iframe>
+    </div>
+  </div>
+</div>
+
+</div>
+
 <script>
-  // ensure top of page on load
-  window.onload = function(){ window.scrollTo(0,0); if('scrollRestoration' in history) history.scrollRestoration='manual' }
+/* 3D hover real */
+const profile = document.getElementById("profile3d");
 
-  // small intersection observer to reveal elements
-  const appear = new IntersectionObserver((entries)=> {
-    entries.forEach(e=>{
-      if(e.isIntersecting){ e.target.classList.add('visible'); e.target.style.opacity=1; e.target.style.transform='none' }
-    });
-  },{threshold:.12,rootMargin:'0px 0px -30px 0px'});
+profile.addEventListener("mousemove", e=>{
+  const rect = profile.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width - .5;
+  const y = (e.clientY - rect.top) / rect.height - .5;
+  profile.style.transform =
+    `rotateY(${x*12}deg) rotateX(${-y*12}deg) scale(1.03)`;
+});
 
-  document.querySelectorAll('.fade-in').forEach(el=>{
-    el.style.opacity=0; el.style.transform='translateY(10px)'; el.style.transition='all .7s cubic-bezier(.23,1,.32,1)';
-    appear.observe(el);
-  });
-
-  // particles (kept but subtle, richer than before)
-  const particlesContainer = document.getElementById('particles-container');
-  const num = 46;
-  for(let i=0;i<num;i++){
-    const d = document.createElement('div');
-    d.style.position='absolute';
-    const size = (Math.random()*4+1);
-    d.style.width = size+'px';
-    d.style.height = d.style.width;
-    d.style.borderRadius = '50%';
-    d.style.left = Math.random()*100 + '%';
-    d.style.top = Math.random()*100 + '%';
-    const alpha = (Math.random()*0.3+0.04).toFixed(2);
-    // pick from three grey palettes with slight tint
-    const palettes = [
-      '154,165,177', // light grey
-      '45,55,72',    // bluish grey
-      '160,174,192'  // mid grey
-    ];
-    const rgb = palettes[Math.floor(Math.random()*palettes.length)];
-    d.style.background = 'rgba('+rgb+','+alpha+')';
-    d.style.filter = 'blur(' + (Math.random()*1.2) +'px)';
-    d.style.pointerEvents='none';
-    d.style.transition = 'transform ' + (10 + Math.random()*10) + 's cubic-bezier(.23,1,.32,1)';
-    // subtle float path
-    const tx = (Math.random()*80-40);
-    const ty = (Math.random()*120-60);
-    setTimeout(()=> d.style.transform = `translate(${tx}px, ${ty}px)`, 200 + Math.random()*1200);
-    // slight pulsing
-    d.animate([{opacity:0.2},{opacity:alpha}],{duration:3000 + Math.random()*4000, iterations:Infinity, direction:'alternate'});
-    particlesContainer.appendChild(d);
-  }
-
-  // clicking a card opens youtube in new tab (delegation)
-  document.querySelectorAll('.card').forEach((c,idx)=>{
-    c.addEventListener('click', (e)=>{
-      // avoid when clicking interactive elements inside (none currently)
-      const links = [
-        'https://youtu.be/kR0Cv6524mM',
-        'https://youtu.be/TB9BlAUvUa8',
-        'https://youtu.be/3zpqruFkSgU'
-      ];
-      const link = links[idx] || '#';
-      window.open(link,'_blank','noopener');
-    });
-    c.style.cursor='pointer';
-  });
-
-  // small accessibility: keyboard open on Enter
-  document.querySelectorAll('.card').forEach((c,idx)=>{
-    c.addEventListener('keydown', (e)=>{
-      if(e.key === 'Enter' || e.key === ' '){
-        const links = [
-          'https://youtu.be/kR0Cv6524mM',
-          'https://youtu.be/TB9BlAUvUa8',
-          'https://youtu.be/3zpqruFkSgU'
-        ];
-        window.open(links[idx] || '#','_blank','noopener');
-      }
-    });
-  });
+profile.addEventListener("mouseleave", ()=>{
+  profile.style.transform="rotateY(0) rotateX(0) scale(1)";
+});
 </script>
+
 </body>
 </html>
